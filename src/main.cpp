@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "src/lzss.hpp"
+#include "lzss.hpp"
 
 int main(int argc, char* argv[])
 {

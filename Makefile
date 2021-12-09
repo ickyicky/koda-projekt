@@ -5,7 +5,7 @@ LDLIBS=
 OBJDIR=obj
 CLANG_FORMATTER=clang-format
 
-SRCS=$(shell find src -type f -name "*.cpp")
+SRCS=$(shell find src -type f \( -name "*.cpp" ! -name "*main.cpp" \))
 SRCDIRS=$(shell find src -type d)
 OBJFILES=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 OBJDIRS=$(patsubst %, $(OBJDIR)/%, $(SRCDIRS))
@@ -14,9 +14,9 @@ TARGET=koda
 
 $(TARGET): $(OBJDIRS)
 $(TARGET): $(OBJFILES)
-$(TARGET): main.cpp
+$(TARGET): src/main.cpp
 $(TARGET):
-	${GPP} -o ${TARGET} $(CPPFLAGS) $(OBJFILES) $(LDFLAGS) $(LDLIBS) main.cpp
+	${GPP} -o ${TARGET} $(CPPFLAGS) $(OBJFILES) $(LDFLAGS) $(LDLIBS) src/main.cpp
 
 $(OBJDIR)/%.o: %.cpp
 	$(GPP) $(CPPFLAGS) $(LDFLAGS) $(LDLIBS) -c $< -o $@
