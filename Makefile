@@ -5,18 +5,31 @@ LDLIBS=
 OBJDIR=obj
 CLANG_FORMATTER=clang-format
 
-SRCS=$(shell find src -type f \( -name "*.cpp" ! -name "*main.cpp" \))
-SRCDIRS=$(shell find src -type d)
-OBJFILES=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
-OBJDIRS=$(patsubst %, $(OBJDIR)/%, $(SRCDIRS))
+CODER_SRCS=$(shell find coder_lzss -type f \( -name "*.cpp" ! -name "*main.cpp" \))
+CODER_SRCDIRS=$(shell find coder_lzss -type d)
+CODER_OBJFILES=$(patsubst %.cpp, $(OBJDIR)/%.o, $(CODER_SRCS))
+CODER_OBJDIRS=$(patsubst %, $(OBJDIR)/%, $(CODER_SRCDIRS))
+CODER_TARGET=coder
 
-TARGET=koda
+all: coder decoder
 
-$(TARGET): $(OBJDIRS)
-$(TARGET): $(OBJFILES)
-$(TARGET): src/main.cpp
-$(TARGET):
-	${GPP} -o ${TARGET} $(CPPFLAGS) $(OBJFILES) $(LDFLAGS) $(LDLIBS) src/main.cpp
+$(CODER_TARGET): $(CODER_OBJDIRS)
+$(CODER_TARGET): $(CODER_OBJFILES)
+$(CODER_TARGET): coder_lzss/main.cpp
+$(CODER_TARGET):
+	${GPP} -o ${CODER_TARGET} $(CPPFLAGS) $(CODER_OBJFILES) $(LDFLAGS) $(LDLIBS) coder_lzss/main.cpp
+
+DECODER_SRCS=$(shell find decoder_lzss -type f \( -name "*.cpp" ! -name "*main.cpp" \))
+DECODER_SRCDIRS=$(shell find decoder_lzss -type d)
+DECODER_OBJFILES=$(patsubst %.cpp, $(OBJDIR)/%.o, $(DECODER_SRCS))
+DECODER_OBJDIRS=$(patsubst %, $(OBJDIR)/%, $(DECODER_SRCDIRS))
+DECODER_TARGET=decoder
+
+$(DECODER_TARGET): $(DECODER_OBJDIRS)
+$(DECODER_TARGET): $(DECODER_OBJFILES)
+$(DECODER_TARGET): decoder_lzss/main.cpp
+$(DECODER_TARGET):
+	${GPP} -o ${DECODER_TARGET} $(CPPFLAGS) $(DECODER_OBJFILES) $(LDFLAGS) $(LDLIBS) decoder_lzss/main.cpp
 
 $(OBJDIR)/%.o: %.cpp
 	$(GPP) $(CPPFLAGS) $(LDFLAGS) $(LDLIBS) -c $< -o $@
