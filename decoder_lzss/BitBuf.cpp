@@ -27,6 +27,11 @@ unsigned BitBuf::read(unsigned short len)
     return result;
 }
 
+bool BitBuf::hasAtLeastWord() 
+{
+    return !reachedFileEnd || !currByte;
+}
+
 void BitBuf::readWord() 
 {
     currByte = 0;

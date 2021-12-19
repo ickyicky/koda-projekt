@@ -59,6 +59,8 @@ class LZSS:
         type_ = self.read(1)
 
         if type_ == 0:
+            if len(self.content) < 8:
+                return
             char = self.read(8)
             print(f"( bit: {type_}, char: {char} )")
         else:

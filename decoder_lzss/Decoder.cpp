@@ -55,6 +55,9 @@ void Decoder::decodeNext()
 	}
 	else if (recordType == 0)
 	{
+		/* check if this is not a zero at end of a file */
+		if (!inputBuffer->hasAtLeastWord())
+			return;
 		/* read new char */
 		toWrite = new char[1];
 		toWrite[0] = (char)inputBuffer->read(8);

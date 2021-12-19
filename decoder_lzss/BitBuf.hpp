@@ -11,6 +11,7 @@ class BitBuf
         BitBuf(ifstream* buffer);
 		unsigned read(unsigned short len);
 		bool finished;
+		bool hasAtLeastWord();
     private:
 		char currWord;
 		unsigned short currByte;
