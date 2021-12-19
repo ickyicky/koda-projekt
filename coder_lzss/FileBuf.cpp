@@ -18,7 +18,7 @@ CFileBuf::~CFileBuf()
 	// wrtite down bits left in bits buffor
 	unsigned	uiLeft = GetLeft();
 	_outFileStream.write((char*) GetBuf(), GetPos() * sizeof(unsigned));
-	uiLeft = uiLeft / 8 + (uiLeft % 8 ? 1 : 0);
+	uiLeft = uiLeft / 8;
 	_outFileStream.write((char*) &GetCurr(), sizeof(unsigned) - uiLeft);
 	_outFileStream.close();
 }
@@ -49,7 +49,7 @@ void CFileBuf::makeCodeWord(char* pBuf, int iMtchPos, int iMtchLen)
 		WriteBits(iMtchPos, _iBitsForPos);
 		WriteBits(iMtchLen, _iBitsForMatchingLength);
 		//DEBUG
-		//cout << "( bit:1, offset:" << iMtchPos << ", len:" << iMtchLen << " )\n";
+		cout << "( bit:1, offset:" << iMtchPos << ", len:" << iMtchLen << " )\n";
 
 	}
 	else
@@ -58,6 +58,6 @@ void CFileBuf::makeCodeWord(char* pBuf, int iMtchPos, int iMtchLen)
 		WriteBits(0, 1);
 		WriteBits(*pBuf, 8);
 		//DEBUG
-		//cout << "( bit:0, chars:" << *pBuf << " )\n";
+		cout << "( bit:0, chars:" << +(*pBuf) << " )\n";
 	}
 }
