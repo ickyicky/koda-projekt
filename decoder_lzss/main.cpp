@@ -17,7 +17,7 @@ int main(int argc, char** argv)
         sFileInPath = argv[1];
     
     if (argc > 2)
-        sFileInPath = argv[2];
+        sFileOutPath = argv[2];
 
 
     ifstream inFile(sFileInPath.data(), ios::in | ios::binary);
