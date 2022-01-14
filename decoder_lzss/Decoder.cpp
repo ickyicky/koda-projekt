@@ -20,12 +20,15 @@ Decoder::Decoder(ifstream* ibuffer, ofstream* output): output(output)
 	dictionary = new char[size];
 	for (unsigned short i = 0; i < size; i++)
 		dictionary[i] = 0;
+
+	toWrite = new char[size];
 }
 
 Decoder::~Decoder() 
 {
 	delete inputBuffer;
 	delete[] dictionary;
+	delete[] toWrite;
 }
 
 bool Decoder::finished() 
@@ -39,7 +42,6 @@ void Decoder::decodeNext()
 {
 	/* read record type */
 	unsigned recordType = inputBuffer->read(1);
-	char* toWrite;
 	unsigned length;
 
 	if (recordType == 1)
@@ -53,8 +55,6 @@ void Decoder::decodeNext()
 		//DEBUG
 		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt, position, length);
 
-		toWrite = new char[length];
-
 		for (unsigned short i = 0; i < length; i++)
 			toWrite[i] = dictionary[position + i + dictStart];
 	}
@@ -64,7 +64,6 @@ void Decoder::decodeNext()
 		if (!inputBuffer->hasAtLeastWord())
 			return;
 		/* read new char */
-		toWrite = new char[1];
 		toWrite[0] = (char)inputBuffer->read(8);
 		length = 1;
 		//DEBUG

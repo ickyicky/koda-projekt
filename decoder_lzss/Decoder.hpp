@@ -19,6 +19,7 @@ class Decoder
         unsigned short _iBitsForPos;
         unsigned short _iBitsForMatchingLength;
         char* dictionary;
+	char* toWrite;
         BitBuf* inputBuffer;
         ofstream* output;
 };
