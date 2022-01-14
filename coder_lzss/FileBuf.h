@@ -20,5 +20,6 @@ private:
 	int					_iBitsForPos;				// Num of bits in code word to store position where matching occurs in dictonary
 	int					_iBitsForMatchingLength;	// Num of bits in code word to store length of the matching
 
+	int					_iLookLen;
 };
 

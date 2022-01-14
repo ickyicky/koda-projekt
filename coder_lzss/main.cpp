@@ -4,11 +4,14 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
+#include <chrono>
 #include "FileBuf.h"
 
 using namespace std;
+using namespace chrono;
 
 bool readFromFile(string sFilePath, char* bufer, int bytesToRead);
+//void writeStatsToFile(string sFilePath, int exeTime);
 
 int main(int argc, char** argv)
 {
@@ -16,7 +19,7 @@ int main(int argc, char** argv)
     string sFileOutPath = "out_data.bin";
     int iDictLen = 1024, iLookLen = 32; // default symbol sizes of dictonary and look ahead buffer
     // read args from command line
-    // 1st arg - InDile, 2nd - outFile, 3rd - Dict len, 4th - look len
+    // 1st arg - InFile, 2nd - outFile, 3rd - Dict len, 4th - look len
     if( argc > 4 ) {
         sFileInPath = argv[1];
         sFileOutPath = argv[2];
@@ -35,7 +38,7 @@ int main(int argc, char** argv)
         sFileInPath = argv[1];
         sFileOutPath = argv[2];
         iDictLen = atoi(argv[3]);
-        // dictonary should be biiger than look ahead buf
+        // dictonary should be bigger than look ahead buf
         if( iLookLen > iDictLen )
         {
             int temp = iLookLen;
@@ -65,6 +68,8 @@ int main(int argc, char** argv)
     char* inBuffer = new char[results.st_size]; // buffer to store file byte data
     if( readFromFile(sFileInPath, inBuffer, iFileSize) ) 
     {
+        auto start = high_resolution_clock::now();
+
         // At start code one symbol to init dictionary
         char* pDctStart = inBuffer; // pointer to dictionary start positon.
         int iDictCrtLen = 1; // Current number of elements placed in dictonary
@@ -82,7 +87,7 @@ int main(int argc, char** argv)
                     continue;
                 }
                 iLenNew = 1; 
-                iLookAhs = min((long)iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
+                iLookAhs = min(iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
                 for( int k = i + 1; k < iDictCrtLen && iLenNew < iLookAhs; k++ )
                 {
                     if( pDctStart[k] == pDctStart[iDictCrtLen + iLenNew] ) {
@@ -112,8 +117,11 @@ int main(int argc, char** argv)
                 pDctStart = (pDctStart + iShiftPos);
             }
             iDictCrtLen = min(iDictCrtLen, iDictLen); // compare to dictonary max size
-
         }
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+        // Wrtite coding stats to file
+        //writeStatsToFile();
     }
     delete[] inBuffer;
 }
@@ -143,3 +151,21 @@ bool readFromFile(string sFilePath, char* buffer, int bytesToRead) {
     }
     inFile.close();
 }
+/*
+void writeStatsToFile(string sFilePath, int exeTime) {
+
+    size_t pos = sFilePath.find(".");
+    if (pos != std::string::npos)
+    {
+        // If found then erase it from string
+        sFilePath.erase(pos, sFilePath.length() - pos);
+    }
+    ofstream outFile(sFilePath.data(), ios::out | ios::app);
+    if (!outFile.is_open()) {
+        return;
+    }
+    outFile << "Execution time: " << exeTime << endl;
+
+    outFile.close();
+}
+*/

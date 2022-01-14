@@ -23,5 +23,7 @@ private:
 
 	unsigned			_uiCurr;			// current 32 bits word to write to buffer 
 	unsigned			_uiLeft;			// number of bits left in current 32 bits word
+
+	unsigned			_uiBytes;			// number of bytes written to file
 };
 

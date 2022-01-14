@@ -6,6 +6,7 @@ CBitBuf::CBitBuf(unsigned uiSize)
 	_uiPos = 0;
     _uiCurr= 0;
     _uiLeft= 32;
+    _uiBytes = 0;
 }
 
 CBitBuf::~CBitBuf()
@@ -20,7 +21,7 @@ unsigned CBitBuf::WriteBits(unsigned uiVal, unsigned uiLen)
         _uiCurr |= uiVal << (32 - _uiLeft);
         _uiLeft -= uiLen;
     }
-    else 
+    else
     {
         unsigned full_bits = uiLen - _uiLeft;                       // number of bits we need to write to another 32 bits word
         unsigned towrite = _uiCurr | (uiVal << (32 - _uiLeft));     // write bits to space left in current word
@@ -37,6 +38,7 @@ unsigned CBitBuf::WriteBits(unsigned uiVal, unsigned uiLen)
 
 int CBitBuf::FlushBuffer()
 {
+    _uiBytes += _uiPos * 4;
     _uiPos = 0;
     return 0;
 }

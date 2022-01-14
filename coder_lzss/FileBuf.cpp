@@ -7,6 +7,7 @@ CFileBuf::CFileBuf(unsigned uiBitBufSize, string sOutFile, int iDictLen, int iLo
 	_outFileStream.open(sOutFile, ios::out | ios::binary);
 	_iBitsForPos = (int)ceil(log2(iDictLen));
 	_iBitsForMatchingLength = (int)ceil(log2(iLookLen));
+	_iLookLen = iLookLen;
     // write info about ditionary and look ahead buffer in 16 bits
     // this will be stored at first 32 bits of out file and be used by decoder
     WriteBits(iDictLen, 16);
@@ -15,10 +16,10 @@ CFileBuf::CFileBuf(unsigned uiBitBufSize, string sOutFile, int iDictLen, int iLo
 
 CFileBuf::~CFileBuf() 
 {
-	// wrtite down bits left in bits buffor
+	// write down bits left in bits buffor
 	unsigned	uiLeft = GetLeft();
 	_outFileStream.write((char*) GetBuf(), GetPos() * sizeof(unsigned));
-	uiLeft = uiLeft / 8;
+	uiLeft = uiLeft / 8 + (uiLeft % 8 ? 1 : 0);
 	_outFileStream.write((char*) &GetCurr(), sizeof(unsigned) - uiLeft);
 	_outFileStream.close();
 }
@@ -34,6 +35,9 @@ int CFileBuf::FlushBuffer()
 	return 0;
 }
 
+//DEBUG
+unsigned dbg_uiCnt = 0;
+
 /// <summary>
 /// Create code word that is a bits squance stored in bits buffer
 /// </summary>
@@ -47,17 +51,20 @@ void CFileBuf::makeCodeWord(char* pBuf, int iMtchPos, int iMtchLen)
 		// if we have phrase matching
 		WriteBits(1, 1);
 		WriteBits(iMtchPos, _iBitsForPos);
+		if (iMtchLen >= _iLookLen) {
+			iMtchLen = 0;
+		}
 		WriteBits(iMtchLen, _iBitsForMatchingLength);
 		//DEBUG
-		cout << "( bit:1, offset:" << iMtchPos << ", len:" << iMtchLen << " )\n";
+		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt++, iMtchPos, iMtchLen);
 
 	}
 	else
 	{
 		// if we have short word - 1 match or match no found
 		WriteBits(0, 1);
-		WriteBits(*pBuf, 8);
+		WriteBits((unsigned)(unsigned char) *pBuf, 8);
 		//DEBUG
-		cout << "( bit:0, chars:" << +(*pBuf) << " )\n";
+		printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt++, *pBuf, (unsigned)(unsigned char) *pBuf);
 	}
 }
