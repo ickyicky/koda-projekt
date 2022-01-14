@@ -1,5 +1,6 @@
 #include "Decoder.hpp"
 #include <math.h>
+#include "stdio.h"
 
 
 Decoder::Decoder(ifstream* ibuffer, ofstream* output): output(output)
@@ -31,6 +32,8 @@ bool Decoder::finished()
 {
 	return inputBuffer->finished;
 }
+/* DEBUG */
+unsigned dbg_uiCnt = 0;
 
 void Decoder::decodeNext()
 {
@@ -47,7 +50,9 @@ void Decoder::decodeNext()
 		if (length == 0)
 			length = lookSize;
 
-		cout << "( bit:1, offset:" << position << ", len:" << length << " )\n";
+		//DEBUG
+		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt, position, length);
+
 		toWrite = new char[length];
 
 		for (unsigned short i = 0; i < length; i++)
@@ -62,9 +67,10 @@ void Decoder::decodeNext()
 		toWrite = new char[1];
 		toWrite[0] = (char)inputBuffer->read(8);
 		length = 1;
-		cout << "( bit:0, chars:" << +toWrite[0] << " )\n";
+		//DEBUG
+		printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt, toWrite[0], (unsigned) (unsigned char) toWrite[0]);
 	}
-
+	dbg_uiCnt++;
 	/* write decoded data */
 	output->write(toWrite, length);
 
@@ -81,8 +87,9 @@ void Decoder::decodeNext()
 	/* update dict start position */
 	if (dictStart > 0)
 	{
-		dictStart -= length;
-		if (dictStart < 0)
+		if( dictStart >= length )
+			dictStart -= length;
+		else
 			dictStart = 0;
 	}
 }
