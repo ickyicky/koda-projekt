@@ -16,11 +16,20 @@ CFileBuf::CFileBuf(unsigned uiBitBufSize, string sOutFile, int iDictLen, int iLo
 
 CFileBuf::~CFileBuf() 
 {
-	// write down bits left in bits buffor
 	unsigned	uiLeft = GetLeft();
+	// write down bits left in bits buffor
 	_outFileStream.write((char*) GetBuf(), GetPos() * sizeof(unsigned));
-	uiLeft = uiLeft / 8 + (uiLeft % 8 ? 1 : 0);
-	_outFileStream.write((char*) &GetCurr(), sizeof(unsigned) - uiLeft);
+	if (uiLeft < 32)
+	{
+		/*	if some bits are set in current byte word, write them
+			and not used bits in full byte set to ones */
+		uiLeft = 32 - uiLeft;  
+		unsigned uiBytes = uiLeft / 8 + (uiLeft % 8 ? 1 : 0);
+		for (unsigned i = 0, k = 8 - (uiLeft % 8); i < k; i++) {
+			WriteBits(1, 1);
+		}
+		_outFileStream.write((char*)&GetCurr(), uiBytes);
+	}
 	_outFileStream.close();
 }
 
@@ -30,7 +39,7 @@ CFileBuf::~CFileBuf()
 /// <returns></returns>
 int CFileBuf::FlushBuffer()
 {
-	_outFileStream.write((char*)GetBuf(), GetSize() * sizeof(unsigned));
+	_outFileStream.write((char*) GetBuf(), GetSize() * sizeof(unsigned));
 	CBitBuf::FlushBuffer();
 	return 0;
 }
@@ -56,7 +65,7 @@ void CFileBuf::makeCodeWord(char* pBuf, int iMtchPos, int iMtchLen)
 		}
 		WriteBits(iMtchLen, _iBitsForMatchingLength);
 		//DEBUG
-		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt++, iMtchPos, iMtchLen);
+		//printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt++, iMtchPos, iMtchLen);
 
 	}
 	else
@@ -65,6 +74,18 @@ void CFileBuf::makeCodeWord(char* pBuf, int iMtchPos, int iMtchLen)
 		WriteBits(0, 1);
 		WriteBits((unsigned)(unsigned char) *pBuf, 8);
 		//DEBUG
-		printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt++, *pBuf, (unsigned)(unsigned char) *pBuf);
+		//printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt++, *pBuf, (unsigned)(unsigned char) *pBuf);
 	}
+	_iGeneratedCodeWords++;
+}
+
+unsigned CFileBuf::GetBytes() {
+	return CBitBuf::GetBytes();
+}
+
+/// <summary>
+/// Get number of generated code words
+/// </summary>
+int CFileBuf::GetNumCdWrds() {
+	return _iGeneratedCodeWords;
 }

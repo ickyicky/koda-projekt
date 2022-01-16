@@ -7,7 +7,7 @@ public:
 	~CBitBuf();
 
 	unsigned			WriteBits(unsigned uiVal, unsigned uiLen);
-	
+
 protected:
 	virtual int			FlushBuffer();
 	unsigned*			GetBuf();
@@ -15,6 +15,7 @@ protected:
 	const unsigned&		GetCurr();
 	unsigned			GetLeft();
 	unsigned			GetPos();
+	unsigned			GetBytes();
 
 private:
 	unsigned*			_puiBuf;			// mem buffer

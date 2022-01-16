@@ -67,3 +67,7 @@ unsigned CBitBuf::GetPos()
 {
     return _uiPos;
 }
+
+unsigned CBitBuf::GetBytes() {
+    return _uiBytes;
+}

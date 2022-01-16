@@ -11,7 +11,8 @@ using namespace std;
 using namespace chrono;
 
 bool readFromFile(string sFilePath, char* bufer, int bytesToRead);
-//void writeStatsToFile(string sFilePath, int exeTime);
+void makeStatsToFile(string sFilePath, int exeTime, int inFileSize,
+    int outFileSize, int GenCdWrds, int dictS, int lkLen);
 
 int main(int argc, char** argv)
 {
@@ -53,6 +54,7 @@ int main(int argc, char** argv)
     else if( argc > 1 ) {
         sFileInPath = argv[1];
     }
+
     int iFileSize = 0;
     struct stat results;
     // get file size in bytes
@@ -64,8 +66,10 @@ int main(int argc, char** argv)
         cout << "Failed to get file size\n";
         exit(1);
     }
+
     CFileBuf  fileBuff(32, sFileOutPath, iDictLen, iLookLen); // creating an object to handle wtriting bits to file
     char* inBuffer = new char[results.st_size]; // buffer to store file byte data
+
     if( readFromFile(sFileInPath, inBuffer, iFileSize) ) 
     {
         auto start = high_resolution_clock::now();
@@ -87,7 +91,7 @@ int main(int argc, char** argv)
                     continue;
                 }
                 iLenNew = 1; 
-                iLookAhs = min((long) iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
+                iLookAhs = min(iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
                 for( int k = i + 1; k < iDictCrtLen && iLenNew < iLookAhs; k++ )
                 {
                     if( pDctStart[k] == pDctStart[iDictCrtLen + iLenNew] ) {
@@ -121,7 +125,8 @@ int main(int argc, char** argv)
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<milliseconds>(stop - start);
         // Wrtite coding stats to file
-        //writeStatsToFile();
+        makeStatsToFile(sFileOutPath, duration.count(), iFileSize, fileBuff.GetBytes(),
+            fileBuff.GetNumCdWrds(), iDictLen, iLookLen);
     }
     delete[] inBuffer;
 }
@@ -151,21 +156,35 @@ bool readFromFile(string sFilePath, char* buffer, int bytesToRead) {
     }
     inFile.close();
 }
-/*
-void writeStatsToFile(string sFilePath, int exeTime) {
 
+void makeStatsToFile(string sFilePath, int exeTime, int inFileSize,
+    int outFileSize, int GenCdWrds, int dictS, int lkLen ) {
+    
+    //float cr = 0.0;
+    float cr = ((float)(inFileSize) / outFileSize); // compression ratio
+    float avgBitLen = 0.0;
+    avgBitLen = 8 * ((float)outFileSize / GenCdWrds);
+    // prepare out file name
     size_t pos = sFilePath.find(".");
     if (pos != std::string::npos)
     {
-        // If found then erase it from string
         sFilePath.erase(pos, sFilePath.length() - pos);
     }
+    sFilePath += "_stats.txt";
+    // write stats to file
     ofstream outFile(sFilePath.data(), ios::out | ios::app);
     if (!outFile.is_open()) {
         return;
     }
-    outFile << "Execution time: " << exeTime << endl;
+    outFile << "Dictonary size: " << dictS << endl;
+    outFile << "Look ahead buffer size: " << lkLen << endl;
+    outFile << "Execution time: " << exeTime << " ms" << endl;
+    outFile << "Input file size: " << inFileSize << " bytes" << endl;
+    outFile << "Output file size: " << outFileSize << " bytes" << endl;
+    outFile << "Compression ratio: " << cr << endl;
+    outFile << "Number of code words: " << GenCdWrds << endl;
+    outFile << "Average code length in bits: " << avgBitLen << endl;
+    outFile << endl;
 
     outFile.close();
 }
-*/
