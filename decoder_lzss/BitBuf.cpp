@@ -6,11 +6,11 @@ BitBuf::BitBuf(ifstream* buffer) : buffer(buffer), finished(false), reachedFileE
     readWord();
 }
 
-unsigned BitBuf::read(unsigned short len) 
+unsigned BitBuf::read(unsigned len, unsigned& read)
 {
-    unsigned result = 0;
+    unsigned result = 0, i;
     /* read bit by bit for easier implementation */
-    for (unsigned short i = 0; i < len; i++)
+    for (i = 0; i < len; i++)
     {
         result |= ((0x01 & currWord) << i);
         currWord = (currWord >> 1);
@@ -18,12 +18,15 @@ unsigned BitBuf::read(unsigned short len)
 
         /* if we reached last bit, read new bytes */
         if (currByte == totalBytes)
-            if (reachedFileEnd)
-                finished = true;
-            else
-                readWord();
+        {
+            if (reachedFileEnd) {
+                finished = true; i++;
+                break;
+            }
+            readWord();
+        }
     }
-
+    read = i;
     return result;
 }
 

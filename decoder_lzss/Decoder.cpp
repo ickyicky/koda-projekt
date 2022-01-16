@@ -6,10 +6,11 @@
 Decoder::Decoder(ifstream* ibuffer, ofstream* output): output(output)
 {
 	/* initialize bit buffer */
+	unsigned read;
 	inputBuffer = new BitBuf(ibuffer);
 	/* read dict size and look size */
-	size = inputBuffer->read(16);
-	lookSize = inputBuffer->read(16);
+	size = inputBuffer->read(16, read);
+	lookSize = inputBuffer->read(16, read);
 	dictStart = size;
 
 	/* calculate number of bits for position and matching length */
@@ -41,33 +42,43 @@ unsigned dbg_uiCnt = 0;
 void Decoder::decodeNext()
 {
 	/* read record type */
-	unsigned recordType = inputBuffer->read(1);
-	unsigned length;
+	unsigned length{}, read;
+	unsigned recordType = inputBuffer->read(1, read);
+	//char* toWrite {nullptr};
 
 	if (recordType == 1)
 	{
 		/* read position and count of chars from dictionary */
-		unsigned position = inputBuffer->read(_iBitsForPos);
-		length = inputBuffer->read(_iBitsForMatchingLength);
+		unsigned position = inputBuffer->read(_iBitsForPos, read);
+		if (inputBuffer->finished && read < _iBitsForPos)
+			return;
+		length = inputBuffer->read(_iBitsForMatchingLength, read);
+		if (inputBuffer->finished && read < _iBitsForMatchingLength)
+			return;
 		if (length == 0)
 			length = lookSize;
 
 		//DEBUG
 		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt, position, length);
 
+		//toWrite = new char[length];
+
 		for (unsigned short i = 0; i < length; i++)
 			toWrite[i] = dictionary[position + i + dictStart];
 	}
 	else if (recordType == 0)
 	{
-		/* check if this is not a zero at end of a file */
-		if (!inputBuffer->hasAtLeastWord())
-			return;
 		/* read new char */
-		toWrite[0] = (char)inputBuffer->read(8);
+		//toWrite = new char[1];
+		toWrite[0] = (char)inputBuffer->read(8, read);
 		length = 1;
 		//DEBUG
 		printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt, toWrite[0], (unsigned) (unsigned char) toWrite[0]);
+		if (!inputBuffer->hasAtLeastWord()) {
+			output->write(toWrite, length);
+			inputBuffer->finished = true;
+			return;
+		}
 	}
 	dbg_uiCnt++;
 	/* write decoded data */

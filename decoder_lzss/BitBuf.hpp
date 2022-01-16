@@ -9,7 +9,7 @@ class BitBuf
 {
     public:
         BitBuf(ifstream* buffer);
-		unsigned read(unsigned short len);
+		unsigned read(unsigned len, unsigned& read);
 		bool finished;
 		bool hasAtLeastWord();
     private:
