@@ -91,7 +91,7 @@ int main(int argc, char** argv)
                     continue;
                 }
                 iLenNew = 1; 
-                iLookAhs = min(iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
+                iLookAhs = min((long) iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
                 for( int k = i + 1; k < iDictCrtLen && iLenNew < iLookAhs; k++ )
                 {
                     if( pDctStart[k] == pDctStart[iDictCrtLen + iLenNew] ) {
