@@ -59,7 +59,7 @@ void Decoder::decodeNext()
 			length = lookSize;
 
 		//DEBUG
-		printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt, position, length);
+		// printf("%5d: bit:1, offset: %u, len: %u\n", dbg_uiCnt, position, length);
 
 		//toWrite = new char[length];
 
@@ -73,7 +73,7 @@ void Decoder::decodeNext()
 		toWrite[0] = (char)inputBuffer->read(8, read);
 		length = 1;
 		//DEBUG
-		printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt, toWrite[0], (unsigned) (unsigned char) toWrite[0]);
+		// printf("%5d: bit:0, chars: %c %02x\n", dbg_uiCnt, toWrite[0], (unsigned) (unsigned char) toWrite[0]);
 		if (!inputBuffer->hasAtLeastWord()) {
 			output->write(toWrite, length);
 			inputBuffer->finished = true;
