@@ -157,9 +157,86 @@ Rozmiar plików testowych podlegających kodowaniu wynosił 262 182 bajty dla ob
 
 # Histogram i entropia danych wejściowych
 
+Program został przetestowany przy użyciu sztucznie wygenerowanych ciągów danych tekstowych oraz obrazów. Do testów zostały wykorzystane pliki o rozkładzie równomiernym, normalnym oraz Laplace. Poniżej znajdują się histogramy tych plików.
+
+## Entropia rozkładów
+
+![geometr_05.pgm - histogram.](../data/histograms/rozklady/geometr_05_histogram.png){ width=70% }
+
+![geometr_099.pgm - histogram](../data/histograms/rozklady/geometr_099_histogram.png){ width=70% }
+
+![geometr_09.pgm - histogram](../data/histograms/rozklady/geometr_09_histogram.png){ width=70% }
+
+![laplace_10.pgm - histogram](../data/histograms/rozklady/laplace_10_histogram.png){ width=70% }
+
+![laplace_20.pgm - histogram](../data/histograms/rozklady/laplace_20_histogram.png){ width=70% }
+
+![laplace_30.pgm - histogram](../data/histograms/rozklady/laplace_30_histogram.png){ width=70% }
+
+![normal_10.pgm - histogram](../data/histograms/rozklady/normal_10_histogram.png){ width=70% }
+
+![normal_30.pgm - histogram](../data/histograms/rozklady/normal_30_histogram.png){ width=70% }
+
+![normal_50.pgm - histogram](../data/histograms/rozklady/normal_50_histogram.png){ width=70% }
+
+![uniform.pgm - histogram](../data/histograms/rozklady/uniform_histogram.png){ width=70% }
+
+\pagebreak
+
+## Entropia obrazów
+
+![barbara.pgm - histogram](../data/histograms/obrazy/barbara_histogram.png){ width=70% }
+
+![boat.pgm - histogram](../data/histograms/obrazy/boat_histogram.png){ width=70% }
+
+![chronometer.pgm - histogram](../data/histograms/obrazy/chronometer_histogram.png){ width=70% }
+
+![lena.pgm - histogram](../data/histograms/obrazy/lena_histogram.png){ width=70% }
+
+![mandril.pgm - histogram](../data/histograms/obrazy/mandril_histogram.png){ width=70% }
+
+![peppers.pgm - histogram](../data/histograms/obrazy/peppers_histogram.png){ width=70% }
+
+\pagebreak
+
 # Entropia źródła blokowego rzędu 2 i 3
 
-# Porównanie średniej długości bitowej kodu wyjściowego z wyliczonymi entropiami
+## Tabela Entropii danych wejściowych
+
+|       Plik      |   Entropia  | Entropia Źródła blokowego 2 rzędu | Entropia Źródła blokowego 3 rzędu |
+|:---------------:|:-----------:|:---------------------------------:|:---------------------------------:|
+|   barbara.pgm   | 7.632119011 |            8.830805669            |            11.44049797            |
+|     boat.pgm    | 7.191370218 |            8.305931861            |            11.11675819            |
+| chronometer.pgm | 6.113328353 |            6.649469668            |            8.413736565            |
+|     lena.pgm    | 7.445061353 |            8.260271592            |             10.9359003            |
+|   mandril.pgm   | 7.292548775 |            8.781243037            |            11.53755631            |
+|   peppers.pgm   | 6.762425168 |            6.935477559            |            8.894681322            |
+|  geometr_05.pgm | 2.000995001 |            2.773701012            |            4.158251694            |
+|  geometr_09.pgm | 4.693658432 |            6.497106357            |            9.585845249            |
+| geometr_099.pgm |  7.65440713 |            9.537849618            |            12.35606984            |
+|  laplace_10.pgm | 5.767144375 |            7.959112291            |            11.30569869            |
+|  laplace_20.pgm | 6.756458638 |             9.09743682            |            12.16752892            |
+|  laplace_30.pgm | 7.287118849 |             9.46102916            |            12.32849581            |
+|  normal_10.pgm  | 5.368684963 |            7.432366604            |             10.8641293            |
+|  normal_30.pgm  |  6.95431406 |            9.432597371            |             12.3270292            |
+|  normal_50.pgm  | 7.649568445 |            9.667618415            |            12.39125859            |
+|   uniform.pgm   | 7.999317791 |            9.672492641            |            12.39279973            |
+
+## Obserwacje
+
+Wśród obrazów najmniejszą entropią cechowały się pliki chronometer i peppers, natomiast wśród danych losowych geometr_05 następnie geometr_09,  normal_10 i laplace_10. 
+
+Największy wpływ na wyniki kompresji miał rodzaj danych testowych oraz ich entropia:
+
+- Obrazy o najniższej wartości entropii pozwalały na uzyskanie mniejszego rozmiaru pliku (chronometer.pgm, peppers.pgm), a te o wyższej wartości nie doświadczały zmian w rozmiarze.
+- W przypadku danych losowych sytuacja miała się podobnie – plik o najmniejszej entropii (geometr_05.pgm) dawał największy stopień kompresji – wynika to też z tego, że plik geometr_05.pgm cechuje się najmniejszą ilością różnych znaków.
+- Widać tu więc potwierdzenie teorii stojącej za kodowanie LZSS – powtarzające się dane są tokenizowane (o ile token nie zajmuje więcej niż zastępowane przez niego dane) dzięki czemu widać zależność: im większa ilość powtarzających się danych w pliku, tym wyższy stopień kompresji.
+ 
+Dla każdego pliku wejściowego uzyskana **średnia bitowa jest większa od entropii**, wynika to z bezstratności kompresji LZSS.
+
+W przypadku przygotowanej implementacji czasy kodowania i dekodowania są dosyć zbliżone, choć według teorii dekoder powinien wykonywać się szybciej, gdy nie musi przeszukiwać słownika tak jak ma to miejsce w koderze, gdzie szukamy najdłuższej frazy. W naszym przypadku zbliżone czasy wynikają z faktu, że mierzony czas wykonania kodera nie uwzględnia czasu poświęconego na odczytanie całego pliku wejściowego. Natomiast dekoder na bieżąco odczytuje kolejne porcje danych z pliku wejściowego i po ich zdekodowaniu są one zapisywane do pliku wyjściowego, stąd też operacje te są uwzględnione w czasie wykonania. Należy zatem zakładać, iż operacje wejścia/ wyjścia zajmując najwięcej czasu podczas pracy dekodera. W przypadku dekodera można powiedzieć, że poświęcamy więcej czasu na czytanie i zapis, ale za to podczas wykonania zajmujemy mniej pamięci. Odwrotna sytuacja jest w koderze, gdzie wczytując cały plik do pamięci podręcznej zyskujemy na czasie wykonania poprzez eliminację częstych operacji odczytu z dysku.
 
 # Ocena efektywności algorytmu do kodowania obrazów naturalnych.
+
+Jak wykazały testy algorytmu LZSS pomimo używania różnych rozmiarów słownika i bufora frazy, dla większości danych testowych, które stanowiły obrazy pliki wyjściowe były większe od plików wejściowych. Można zatem stwierdzić, iż kodowanie LZSS nie jest najlepszym rozwiązaniem do kodowania obrazów naturalnych. Prawdopodobnie algorytm LZSS lepiej sprawdza się przy danych tekstowych, w których to zwykle powtarzają się pewne sekwencje słów.
 
