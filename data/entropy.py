@@ -5,35 +5,35 @@ from os import listdir
 import numpy as np
 
 
-def calculate_image_entropy(image_path, block=1):
+def calculate_image_block_entropy(image_path, block=1):
     image = mpimg.imread(image_path)
-    return _calculate_entropy(image.flatten().astype('byte'), block)
+    return block_entropy(image.flatten().astype('byte'), block)
 
 
-def _calculate_entropy(input_data, block=1):
-    input_data = _apply_blocks(input_data, block)
-    freqs = Counter(input_data)
-    probabilities = [float(freq) / len(input_data) for freq in freqs.values()]
+def _calculate_entropy(image_path):
+    image = mpimg.imread(image_path).flatten().astype('byte')
+    freqs = Counter(image)
+    probabilities = [float(freq) / len(image) for freq in freqs.values()]
     return -1.0 * sum(p * log2(p) for p in probabilities)
 
 
-def _apply_blocks(data, blocks):
-    if blocks == 1:
-        return data
-    else:
-        result = []
-        for idx in range(0, len(data) - blocks + 1, 2):
-            result.append(sum(data[idx:(idx + blocks)]))
-        return result
+def block_entropy(data, m):
+    B = np.zeros(m * [max(data) + 1])  # Generate (max(A)+1)^m-Array of zeroes for counting.
+    for j in range(len(data) - m + 1):
+        B[tuple(data[j:j + m])] += 1  # Do the counting by directly using the array slice for indexing.
+    C = B[B > 0] / (len(data) - m + 1)  # Flatten array, take only non-zero entries, divide for probability.
+    return -sum(x * np.log(x) for x in C)  # Calculate entropy
 
 
 def calculate_name_to_entropy(paths):
-    return [(path.split('/')[1], calculate_image_entropy(path, 1), calculate_image_entropy(path, 2),calculate_image_entropy(path, 3)) for path in paths]
+    return [(path.split('/')[1], _calculate_entropy(path), calculate_image_block_entropy(path, 2),
+             calculate_image_block_entropy(path, 3)) for path in paths]
 
 
-paths = ['obrazy/' + filename for filename in listdir("./obrazy")] + ['rozklady/' + filename for filename in listdir("./rozklady")]
-name_to_entropy = calculate_name_to_entropy(paths)
+img_paths = ['obrazy/' + filename for filename in listdir("./obrazy")] + ['rozklady/' + filename for filename in
+                                                                          listdir("./rozklady")]
+name_to_entropy = calculate_name_to_entropy(img_paths)
 with open(f"entropy_results.csv", 'w') as writer:
-    writer.write("filename,1_block,2_blocks,3_blocks\n")
-    for name, e1, e2, e3 in name_to_entropy:
+    writer.write("filename,entropy,2_blocks,3_blocks\n")
+    for name, e1, e2, e3 in sorted(name_to_entropy):
         writer.write(f"{name},{e1},{e2},{e3}\n")
