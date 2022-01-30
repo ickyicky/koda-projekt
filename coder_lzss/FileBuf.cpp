@@ -28,7 +28,16 @@ CFileBuf::~CFileBuf()
 		for (unsigned i = 0, k = 8 - (uiLeft % 8); i < k; i++) {
 			WriteBits(1, 1);
 		}
-		_outFileStream.write((char*)&GetCurr(), uiBytes);
+		if (uiBytes == 4)
+		{
+			if (GetPos()) {
+				_outFileStream.write((char*)(GetBuf() + GetPos() - 1), sizeof(unsigned));
+			}
+		}
+		else
+		{
+			_outFileStream.write((char*)&GetCurr(), uiBytes);
+		}
 	}
 	_outFileStream.close();
 }
@@ -45,7 +54,7 @@ int CFileBuf::FlushBuffer()
 }
 
 //DEBUG
-unsigned dbg_uiCnt = 0;
+//unsigned dbg_uiCnt = 0;
 
 /// <summary>
 /// Create code word that is a bits squance stored in bits buffer
