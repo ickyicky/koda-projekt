@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     // get file size in bytes
     if( stat(sFileInPath.data(), &results) == 0 ) {
         iFileSize = results.st_size;
-        cout << "Size of file: " << iFileSize << " bytes\n";
+        //cout << "Size of file: " << iFileSize << " bytes\n";
     }
     else {
         cout << "Failed to get file size\n";
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
                     continue;
                 }
                 iLenNew = 1; 
-                iLookAhs = min((long) iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
+                iLookAhs = min(iLookLen, iFileSize - iDictCrtLen - (inBuffer - pDctStart));
                 for( int k = i + 1; k < iDictCrtLen && iLenNew < iLookAhs; k++ )
                 {
                     if( pDctStart[k] == pDctStart[iDictCrtLen + iLenNew] ) {
@@ -158,18 +158,20 @@ bool readFromFile(string sFilePath, char* buffer, int bytesToRead) {
 }
 
 void makeStatsToFile(string sFilePath, int exeTime, int inFileSize,
-    int outFileSize, int GenCdWrds, int dictS, int lkLen ) {
+    int outFileSize, int GenCdWrds, int dictS, int lkLen ) 
+{
     
-    //float cr = 0.0;
     float cr = ((float)(inFileSize) / outFileSize); // compression ratio
     float avgBitLen = 0.0;
-    avgBitLen = 8 * ((float)outFileSize / GenCdWrds);
+    //avgBitLen = 8 * ((float)outFileSize / GenCdWrds);
+    avgBitLen = 8 / cr;
     // prepare out file name
     size_t pos = sFilePath.find(".");
     if (pos != std::string::npos)
     {
         sFilePath.erase(pos, sFilePath.length() - pos);
     }
+    string sFileNm = sFilePath;
     sFilePath += "_stats.txt";
     // write stats to file
     ofstream outFile(sFilePath.data(), ios::out | ios::app);
@@ -186,5 +188,20 @@ void makeStatsToFile(string sFilePath, int exeTime, int inFileSize,
     outFile << "Average code length in bits: " << avgBitLen << endl;
     outFile << endl;
 
+    outFile.close();
+
+    // Csv file for tests
+    pos = sFileNm.find("\\");
+    if (pos != std::string::npos)
+    {
+        sFileNm.erase(0, pos+1);
+    }
+    string sCsvFilePath = "out/Stats.csv";
+    outFile.open(sCsvFilePath.data(), ios::out | ios::app);
+    if (!outFile.is_open()) {
+        return;
+    }
+    outFile << sFileNm << ";" << dictS << ";" << lkLen << ";" << exeTime << ";"
+        << inFileSize << ";" << outFileSize << ";" << cr << ";" << GenCdWrds << ";" << avgBitLen << ";" << "\n";
     outFile.close();
 }
